@@ -6,8 +6,8 @@
 // Drop
 
 use std::{
-    alloc::{Layout, alloc},
-    ops::Deref,
+    alloc::{Layout, alloc, dealloc},
+    ops::{Deref, DerefMut},
     ptr::NonNull,
 };
 
@@ -41,20 +41,70 @@ impl<T> Deref for MyBox<T> {
     }
 }
 
-
-impl <T> DerefMut for MyBox<T> {
+impl<T> DerefMut for MyBox<T> {
     fn deref_mut(&mut self) -> &mut T {
-        unsafe {
-            self.ptr.as_mut()
-        }
+        unsafe { self.ptr.as_mut() }
     }
 }
 
-impl <T> Drop for Box <T> {
+impl<T> Drop for MyBox<T> {
     fn drop(&mut self) {
         unsafe {
+            let layout = Layout::new::<T>();
+
+            // Drop the value first
             std::ptr::drop_in_place(self.ptr.as_ptr());
-            dealloc(self.ptr.as_ptr() as *mut u8, Layout::new::<T>())
+
+            // Free the memory
+            dealloc(self.ptr.as_ptr() as *mut u8, layout);
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::cell::Cell;
+
+    use super::*;
+
+    #[test]
+    fn test_basic_deref() {
+        let mut x = MyBox::new(42);
+        assert_eq!(*x, 42);
+    }
+
+    #[test]
+    fn test_mut_deref() {
+        let mut x = MyBox::new(10);
+        *x = 99;
+        assert_eq!(*x, 99);
+    }
+
+    #[test]
+    fn test_string() {
+        let x = MyBox::new(String::from("naina"));
+        assert_eq!(x.len(), 5); // deref coercion works
+    }
+
+    #[test]
+    fn test_drop_run() {
+        struct TestDrop<'a> {
+            flag: &'a Cell<bool>,
+        }
+
+        impl<'a> Drop for TestDrop<'a> {
+            fn drop(&mut self) {
+                self.flag.set(true);
+            }
+        }
+
+        let flag = Cell::new(false);
+        {
+            let _x = MyBox::new(TestDrop { flag: &flag });
+            assert_eq!(flag.get(), false);
+        }
+        // after scope -> Drop should run
+        assert_eq!(flag.get(), true);
+    }
+}
+
