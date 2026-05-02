@@ -40,3 +40,21 @@ impl<T> Deref for MyBox<T> {
         unsafe { self.ptr.as_ref() }
     }
 }
+
+
+impl <T> DerefMut for MyBox<T> {
+    fn deref_mut(&mut self) -> &mut T {
+        unsafe {
+            self.ptr.as_mut()
+        }
+    }
+}
+
+impl <T> Drop for Box <T> {
+    fn drop(&mut self) {
+        unsafe {
+            std::ptr::drop_in_place(self.ptr.as_ptr());
+            dealloc(self.ptr.as_ptr() as *mut u8, Layout::new::<T>())
+        }
+    }
+}
