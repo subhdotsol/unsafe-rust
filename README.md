@@ -1,6 +1,6 @@
 # unsafe-rust
 
-Reimplementing core Rust data structures from scratch using raw pointers, manual allocations, and `unsafe` blocks — no standard library collections allowed.
+Reimplementing core Rust data structures from scratch using raw pointers, manual allocations, and `unsafe` blocks no standard library collections allowed.
 
 The goal is to understand what the standard library actually does under the hood: how heap memory is requested, how ownership is tracked without the borrow checker's help, how atomics replace locks for concurrent access, and what `Drop`, `Deref`, and `Send`/`Sync` really mean at the pointer level.
 
@@ -8,7 +8,7 @@ The goal is to understand what the standard library actually does under the hood
 
 ## Implemented
 
-### `MyBox<T>` — owned heap pointer
+### `MyBox<T>` : owned heap pointer
 
 A minimal reimplementation of `Box<T>`.
 
@@ -27,7 +27,7 @@ drop(box)             drop_in_place runs T's destructor, then dealloc frees the 
 
 ---
 
-### `MyVec<T>` — growable heap array
+### `MyVec<T>` : growable heap array
 
 A growable, heap-allocated array with amortized O(1) push.
 
