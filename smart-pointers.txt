@@ -1,0 +1,137 @@
+Smart pointer	Main idea
+Box<T>	Heap allocation + single ownership
+Rc<T>	Shared ownership, single-threaded
+Arc<T>	Shared ownership, thread-safe reference counting
+Weak<T>	Non-owning weak reference to Rc/Arc
+RefCell<T>	Runtime-checked interior mutability
+Cell<T>	Simple interior mutability for Copy-like values
+Mutex<T>	Thread-safe interior mutability
+RwLock<T>	Multiple readers OR one writer
+Cow<'a, T>	Clone-on-write
+
+
+
+                         POINTER-LIKE TYPES
+                                │
+             ┌──────────────────┼──────────────────┐
+             │                  │                  │
+        Owning pointers     Borrowing pointers   Raw pointers
+             │                  │                  │
+       ┌─────┼─────┐        ┌───┴───┐          *const T
+       │     │     │        │       │          *mut T
+      Box   Rc    Arc      &T      &mut T
+                    │
+                  Weak
+
+
+                 Arc<T>
+                   │
+          ┌────────┼─────────┐
+          │        │         │
+       Arc<     Arc<      Arc<
+       Mutex>   RwLock>   Atomic...>
+          │
+          ▼
+   shared ownership
+   + synchronized mutation
+
+
+                         OWNERSHIP
+                            │
+              ┌─────────────┴─────────────┐
+              │                           │
+         ONE OWNER                   MANY OWNERS
+              │                           │
+            Box<T>                  ┌─────┴─────┐
+                                    │           │
+                                  Rc<T>       Arc<T>
+                                    │           │
+                             single-thread   multi-thread
+                                    │           │
+                                    └─────┬─────┘
+                                          │
+                                        Weak
+                                          │
+                                  non-owning reference
+
+
+
+                       MUTATION
+                          │
+             ┌────────────┼────────────┐
+             │            │            │
+          Cell<T>     RefCell<T>   Mutex<T>
+             │            │            │
+        simple/runtime   runtime     threads
+        interior         borrow      synchronization
+        mutation         checking
+                                      │
+                                   RwLock<T>
+
+
+Rc<RefCell<T>>
+     │
+     └── shared ownership
+         +
+         mutable access
+         +
+         single thread
+
+
+Arc<Mutex<T>>
+     │
+     └── shared ownership
+         +
+         mutable access
+         +
+         multiple threads
+
+
+Arc<RwLock<T>>
+     │
+     └── shared ownership
+         +
+         concurrent reads
+         +
+         exclusive writes
+
+
+
+Cow<T>
+  │
+  └── clone-on-write
+
+Pin<T>
+  │
+  └── prevent moving a value
+
+
+                    RUST VALUE
+                        │
+        ┌───────────────┼────────────────┐
+        │               │                │
+     MUTATION        OWNERSHIP         MEMORY
+        │               │                │
+   ┌────┼────┐      ┌───┼────┐      ┌────┼────────┐
+   │    │    │      │   │    │      │    │        │
+ Cell RefCell Mutex Box  Rc   Arc  NonNull MaybeUninit
+              │            │    │
+              │            │    └── Weak
+              │            │
+              │            └── RefCell
+              │
+              └── RwLock
+
+
+Box<T>       → one owner, heap
+Rc<T>        → multiple owners, single thread
+Arc<T>       → multiple owners, threads
+Weak<T>      → non-owning reference
+
+Cell<T>      → simple interior mutation
+RefCell<T>   → runtime borrow checking
+Mutex<T>     → synchronized exclusive access
+RwLock<T>    → many readers / one writer
+
+Cow<T>       → clone on write
+Pin<T>       → don't move
