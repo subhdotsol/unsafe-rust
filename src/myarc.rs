@@ -158,6 +158,8 @@ mod tests {
         let arc = MyArc::new(42);
         assert_eq!(*arc, 42);
     }
+
+    // whats next to build
 }
 
 // what does API of arc contain ?
@@ -170,3 +172,43 @@ mod tests {
 // 7. taking T back -> Arc::try_unwrap(arc) // if i am a strong owner can i take T out without cloning it
 // 8. weak reference -> distinguish  lifetime of T from lifetime of the allocation/control block
 // 9. raw pointer APIs -> Arc::into_raw(arc), Arc::from_raw(ptr), Arc::as_ptr(&arc)
+
+//PHASE 1 — Core
+// ────────────────────────
+// new()
+// clone()
+// Deref
+// Drop
+// strong_count()
+
+// PHASE 2 — Mutable access
+// ────────────────────────
+// get_mut()
+// make_mut()
+
+// PHASE 3 — Extracting T
+// ────────────────────────
+// try_unwrap()
+// unwrap_or_clone()
+
+// PHASE 4 — Weak
+// ────────────────────────
+// MyWeak<T>
+// downgrade()
+// upgrade()
+// strong_count()
+// weak_count()
+// Drop
+
+// PHASE 5 — Raw pointers
+// ────────────────────────
+// as_ptr()
+// into_raw()
+// from_raw()
+
+// PHASE 6 — Thread safety
+// ────────────────────────
+// AtomicUsize
+// Send
+// Sync
+// Ordering
